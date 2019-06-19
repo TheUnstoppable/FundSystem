@@ -1,5 +1,3 @@
-#ifndef FUNDEMENT
-#define FUNDEMENT
 #pragma once
 
 #include "General.h"
@@ -306,4 +304,3 @@ const char * MCFund::commcenterkeys[4] = { "cc", "comm", "commcenter", "communic
 const char * MCFund::reppadkeys[4] = { "repair", "repfac", "reppad", "repair_pad" };
 const char * MCFund::silokeys[4] = { "sil", "tiberiumsilo", "tibsilo", "silo" };
 const char * MCFund::shrinekeys[4] = { "shrine", "temple", "son", "ton" };
-#endif
