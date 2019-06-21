@@ -156,7 +156,7 @@ class MCFund : public DAEventClass, public DAChatCommandClass
 	{
 		for (int i = 0; i < NameList.Count(); i++)
 		{
-			if (std::string(NameList[i]) == std::string(toFind))
+			if (strcmp(NameList[i].Peek_Buffer(), toFind) == 0)
 			{
 				return true;
 			}
@@ -242,7 +242,7 @@ class MCFund : public DAEventClass, public DAChatCommandClass
 		}
 		else if (Building == BUILDING_TYPE::TIBERIUMSILO)
 		{
-			//DeadBld = Find_Repair_Bay(Team);
+			DeadBld = Find_TibSilo(Team);
 		}
 		else if (Building == BUILDING_TYPE::VEHICLEFACTORY)
 		{
@@ -254,7 +254,7 @@ class MCFund : public DAEventClass, public DAChatCommandClass
 
 	bool Equals(StringClass string, const char* find)
 	{
-		return (std::string(string).find(find) != std::string::npos);
+		return strcmp(string.Peek_Buffer(), find) == 0;
 	}
 
 	enum FundResult
@@ -277,7 +277,15 @@ class MCFund : public DAEventClass, public DAChatCommandClass
 
 	BuildingGameObj* Find_TibSilo(int Team)
 	{
-		return Find_Building_By_Preset(Team, "Silo")->As_BuildingGameObj();
+		GameObject *Silo = Find_Building_By_Preset(Team, "Silo");
+		if (Silo)
+		{
+			return Silo->As_BuildingGameObj();
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 
 	virtual FundResult Process_Fund(GameObject* Building, BUILDING_TYPE Type);
@@ -286,7 +294,7 @@ class MCFund : public DAEventClass, public DAChatCommandClass
 	bool FindItem(const char* array[], int size, const char *target) {
 		for (int counter = 0; counter < size; counter++)
 		{
-			if (std::string(array[counter]) == std::string(target))
+			if (strcmp(array[counter], target) == 0)
 			{
 				return true;
 			}

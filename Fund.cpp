@@ -27,7 +27,7 @@ bool MCFund::Activate(cPlayer *Player, const DATokenClass &Text, TextMessageEnum
 {
 	if (FundEnabled)
 	{
-		if (std::string(Text[1]) == std::string("debug"))
+		if (strcmp(Text[1].Peek_Buffer(), "debug") == 0)
 		{
 			if (Player->Get_DA_Player()->Get_Access_Level() >= DAAccessLevel::FULLMODERATOR)
 			{
