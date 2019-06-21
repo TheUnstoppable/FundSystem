@@ -214,7 +214,7 @@ bool MCFund::Activate(cPlayer *Player, const DATokenClass &Text, TextMessageEnum
 		}
 		else
 		{
-			DA::Private_Color_Message(Player, FUNDCOLOR, "[Fund] Cannot find building with key \"%s\".", Text[1]);
+			DA::Private_Color_Message(Player, FUNDCOLOR, "[Fund] Cannot find building with key \"%s\".", Text[1].Peek_Buffer());
 			return false;
 		}
 	}
@@ -271,7 +271,7 @@ void MCFund::Perform_Fund(BUILDING_TYPE Building, FundResult Result, const DATok
 				{
 					if (!ConstFundValue)
 					{
-						DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), (int)((*Tick) * ((*Pl) * Multiplier)), (int)((*Tick) * ((*Pl) * Multiplier) - (int)PlayerMoney + (*Fund)), Multiplier, (*Tick), *Pl);
+						DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), (int)((*Tick) * ((*Pl) * Multiplier)), (int)((*Tick) * ((*Pl) * Multiplier) - ((int)PlayerMoney + (*Fund))), Multiplier, (*Tick), *Pl);
 					}
 					else
 					{
@@ -282,9 +282,9 @@ void MCFund::Perform_Fund(BUILDING_TYPE Building, FundResult Result, const DATok
 
 				if (ConstFundValue == false)
 				{
-					if (PlayerMoney + (*Fund) > (*Tick) * ((*Pl) * Multiplier))
+					if (PlayerMoney + (*Fund) >= (*Tick) * ((*Pl) * Multiplier))
 					{
-						Commands->Give_Money(Requester->Get_GameObj(), -(float)((*Tick) * ((*Pl) * Multiplier) - (int)PlayerMoney + (*Fund)), false);
+						Commands->Give_Money(Requester->Get_GameObj(), -((float)((*Tick) * ((*Pl) * Multiplier)) - float((*Fund))), false);
 						*Fund = 0;
 
 						Revive_Building(PlType(Requester), Building);
@@ -298,9 +298,9 @@ void MCFund::Perform_Fund(BUILDING_TYPE Building, FundResult Result, const DATok
 				}
 				else
 				{
-					if (PlayerMoney + (*Fund) > (*Tick))
+					if (PlayerMoney + (*Fund) >= (*Tick))
 					{
-						Commands->Give_Money(Requester->Get_GameObj(), -(float)((*Tick) - (int)PlayerMoney + (*Fund)), false);
+						Commands->Give_Money(Requester->Get_GameObj(), -((int)PlayerMoney + (*Fund) - (float)(*Tick)), false);
 						*Fund = 0;
 
 						Revive_Building(PlType(Requester), Building);
@@ -312,6 +312,10 @@ void MCFund::Perform_Fund(BUILDING_TYPE Building, FundResult Result, const DATok
 						SendFundMessage(Requester, Find_Building_By_Type(PlType(Requester), Building), int(PlayerMoney), *Tick, Fund);
 					}
 				}
+			}
+			else
+			{
+				DA::Private_Color_Message(Requester, FUNDCOLOR, "[Fund] You can't fund negative money to a fund.");
 			}
 		}
 		else if (Token.Size() == 2)
@@ -337,65 +341,72 @@ void MCFund::Perform_Fund(BUILDING_TYPE Building, FundResult Result, const DATok
 				PlayerMoney = Commands->Get_Money(Requester->Get_GameObj());
 			}
 
-			if (Debug)
+			if (PlayerMoney > 0.0f)
 			{
-				if (!ConstFundValue)
+				if (Debug)
 				{
-					DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), (int)((*Tick) * ((*Pl) * Multiplier)), (int)((*Tick) * ((*Pl) * Multiplier) - (int)PlayerMoney + (*Fund)), Multiplier, (*Tick), *Pl);
-				}
-				else
-				{
-					DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), *Tick, *Tick - ((int)PlayerMoney + (*Fund)), Multiplier, (*Tick), *Pl);
-				}
-			}
-
-			if (ConstFundValue == false)
-			{
-				if (PlayerMoney + (*Fund) > (*Tick) * ((*Pl) * Multiplier))
-				{
-					Commands->Give_Money(Requester->Get_GameObj(), -(float)(PlayerMoney - (*Fund)), false);
-					*Fund = 0;
-
-					Revive_Building(PlType(Requester), Building);
-				}
-				else
-				{
-					*Fund += int(PlayerMoney);
-					Commands->Give_Money(Requester->Get_GameObj(), -PlayerMoney, false);
-					if (*Fund >= (*Tick) * ((*Pl) * Multiplier))
+					if (!ConstFundValue)
 					{
+						DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), (int)((*Tick) * ((*Pl) * Multiplier)), (int)((*Tick) * ((*Pl) * Multiplier) - ((int)PlayerMoney + (*Fund))), Multiplier, (*Tick), *Pl);
+					}
+					else
+					{
+						DA::Host_Message("[Fund] Amount: %i, Value 2: %i, Total Needed: %i, Left: %i, Multiplier: %f, Tick/PL: %i/%i", (int)PlayerMoney, (int)PlayerMoney + (*Fund), *Tick, *Tick - ((int)PlayerMoney + (*Fund)), Multiplier, (*Tick), *Pl);
+					}
+				}
+
+				if (ConstFundValue == false)
+				{
+					if (PlayerMoney + (*Fund) >= (*Tick) * ((*Pl) * Multiplier))
+					{
+						Commands->Give_Money(Requester->Get_GameObj(), -((float)((*Tick) * ((*Pl) * Multiplier)) - float((*Fund))), false);
 						*Fund = 0;
+
 						Revive_Building(PlType(Requester), Building);
 					}
 					else
 					{
-						SendFundMessage(Requester, Find_Building_By_Type(PlType(Requester), Building), int(PlayerMoney), int((float)(*Tick)* ((float)(*Pl)* Multiplier)), Fund);
+						*Fund += int(PlayerMoney);
+						Commands->Give_Money(Requester->Get_GameObj(), -PlayerMoney, false);
+						if (*Fund >= (*Tick) * ((*Pl) * Multiplier))
+						{
+							*Fund = 0;
+							Revive_Building(PlType(Requester), Building);
+						}
+						else
+						{
+							SendFundMessage(Requester, Find_Building_By_Type(PlType(Requester), Building), int(PlayerMoney), int((float)(*Tick) * ((float)(*Pl) * Multiplier)), Fund);
+						}
+					}
+				}
+				else
+				{
+					if (PlayerMoney + (*Fund) >= (*Tick))
+					{
+						Commands->Give_Money(Requester->Get_GameObj(), -((int)PlayerMoney + (*Fund) - (float)(*Tick)), false);
+						*Fund = 0;
+
+						Revive_Building(PlType(Requester), Building);
+					}
+					else
+					{
+						*Fund += int(PlayerMoney);
+						Commands->Give_Money(Requester->Get_GameObj(), -PlayerMoney, false);
+						if (*Fund >= (*Tick))
+						{
+							*Fund = 0;
+							Revive_Building(PlType(Requester), Building);
+						}
+						else
+						{
+							SendFundMessage(Requester, Find_Building_By_Type(PlType(Requester), Building), int(PlayerMoney), int((float)(*Tick)), Fund);
+						}
 					}
 				}
 			}
 			else
 			{
-				if (PlayerMoney + (*Fund) > (*Tick))
-				{
-					Commands->Give_Money(Requester->Get_GameObj(), -(float)(PlayerMoney - (*Fund)), false);
-					*Fund = 0;
-
-					Revive_Building(PlType(Requester), Building);
-				}
-				else
-				{
-					*Fund += int(PlayerMoney);
-					Commands->Give_Money(Requester->Get_GameObj(), -PlayerMoney, false);
-					if (*Fund >= (*Tick))
-					{
-						*Fund = 0;
-						Revive_Building(PlType(Requester), Building);
-					}
-					else
-					{
-						SendFundMessage(Requester, Find_Building_By_Type(PlType(Requester), Building), int(PlayerMoney), int((float)(*Tick)), Fund);
-					}
-				}
+				DA::Private_Color_Message(Requester, FUNDCOLOR, "[Fund] You can't fund negative money to a fund.");
 			}
 		}
 	}
